@@ -81,7 +81,8 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeIte
 
         const excludeRegExp = new RegExp(excludePattern);
         return tasks.filter(task => !excludeRegExp.test(task.name));
-}
+    }
+    
     private static async generateTree(): Promise<TaskTreeItem[]> {
         const treeItemMap = new Map<string, TaskTreeItem>();
         const tasks = await TaskTreeDataProvider.getTasks();
@@ -110,6 +111,15 @@ export class TaskTreeDataProvider implements vscode.TreeDataProvider<TaskTreeIte
                 treeItemMap,
                 path,
                 () => new TaskTreeItem(task.source, TaskTreeItemType.source, path, parent)
+            );
+
+            // Add group item if not exist
+            const group = task.group ? (typeof task.group === 'string' ? task.group : task.group.id) : 'none';
+            path = `${path}/${group}`;
+            parent = getOrAdd(
+                treeItemMap,
+                path,
+                () => new TaskTreeItem(group, TaskTreeItemType.group, path, parent)
             );
 
             path = `${path}/${task.name}`;
